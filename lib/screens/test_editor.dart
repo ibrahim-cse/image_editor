@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
@@ -5,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_painter/flutter_painter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -17,6 +19,13 @@ class FlutterPainterExample extends StatefulWidget {
 }
 
 class _FlutterPainterExampleState extends State<FlutterPainterExample> {
+  bool servicestatus = false;
+  bool haspermission = false;
+  late LocationPermission permission;
+  late Position position;
+  String long = "", lat = "";
+  late StreamSubscription<Position> positionStream;
+
   static const Color red = Color(0xFFFF0000);
   FocusNode textFocusNode = FocusNode();
   late PainterController controller;
@@ -64,6 +73,7 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
 
   @override
   void initState() {
+    // checkGps();
     super.initState();
     controller = PainterController(
         settings: PainterSettings(
@@ -88,6 +98,74 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
     textFocusNode.addListener(onFocus);
     // Initialize background
     initBackground();
+  }
+
+  checkGps() async {
+    servicestatus = await Geolocator.isLocationServiceEnabled();
+    if (servicestatus) {
+      permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          print('Location permissions are denied');
+        } else if (permission == LocationPermission.deniedForever) {
+          print("'Location permissions are permanently denied");
+        } else {
+          haspermission = true;
+        }
+      } else {
+        haspermission = true;
+      }
+
+      if (haspermission) {
+        setState(() {
+          //refresh the UI
+        });
+
+        getLocation();
+      }
+    } else {
+      print("GPS Service is not enabled, turn on GPS location");
+    }
+
+    setState(() {
+      //refresh the UI
+    });
+  }
+
+  getLocation() async {
+    position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    print(position.longitude); //Output: 80.24599079
+    print(position.latitude); //Output: 29.6593457
+
+    long = position.longitude.toString();
+    lat = position.latitude.toString();
+
+    setState(() {
+      //refresh UI
+    });
+
+    LocationSettings locationSettings = LocationSettings(
+      accuracy: LocationAccuracy.high, //accuracy of the location data
+      distanceFilter: 100, //minimum distance (measured in meters) a
+      //device must move horizontally before an update event is generated;
+    );
+
+    StreamSubscription<Position> positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position position) {
+      print(position.longitude); //Output: 80.24599079
+      print(position.latitude); //Output: 29.6593457
+
+      long = position.longitude.toString();
+      lat = position.latitude.toString();
+
+      setState(() {
+        //refresh UI on update
+      });
+    });
   }
 
   void initBackground() async {
@@ -508,6 +586,14 @@ class _FlutterPainterExampleState extends State<FlutterPainterExample> {
   }
 
   void addSticker() async {
+    // Text(servicestatus ? "GPS is Enabled" : "GPS is disabled.");
+    // Text(haspermission ? "GPS is Enabled" : "GPS is disabled.");
+    //
+    // Text("Longitude: $long", style: TextStyle(fontSize: 20));
+    // Text(
+    //   "Latitude: $lat",
+    //   style: TextStyle(fontSize: 20),
+    // );
     final imageLink = await showDialog<String>(
         context: context,
         builder: (context) => SelectStickerImageDialog(
