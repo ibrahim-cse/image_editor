@@ -43,6 +43,7 @@ class _MyCameraState extends State<MyCamera> {
     var picture = await ImagePicker().pickImage(source: ImageSource.camera);
     var bytes = await picture!.readAsBytes();
     var tags = await readExifFromBytes(bytes);
+
     // Map<String, String> mTags = HashMap();
     // try {
     //   mTags.addAll(exifToGPS(tags));
@@ -55,14 +56,44 @@ class _MyCameraState extends State<MyCamera> {
     //   });
     tags.forEach((key, value) => print("$key : $value"));
 
-    setState(() {
+    setState(() async {
       // imageFile = picture as File;
       imageFile = File(picture.path);
       dirPath = picture.path;
       print('path');
       print(dirPath);
+
+      // if (imageFile == null) return;
+      // final backgroundImageSize = imageFile?.writeAsBytes(bytes);
+      // print('backgroundImageSize $backgroundImageSize');
+      //
+      // final image = backgroundImageSize;
+      // final byteData = await image.pngBytes;
+      // print('byteData $byteData');
+      //
+      // final extdir = await getExternalStorageDirectories();
+      // print('getExternalStorageDirectories ${extdir![0].path}');
+      //
+      // final file = File('${extdir[0].path}/img.png');
+      // await file.writeAsBytes(byteData!.buffer
+      //     .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
     });
   }
+
+//   _saveImage() async {
+//     final image = await ImagePicker().pickImage(source: ImageSource.camera);
+//
+// // getting a directory path for saving
+//     var path;
+//     path = await getExternalStorageDirectory().path;
+//
+// // copy the file to a new path
+//     final File newImage = await image!.copy('$path/image1.png');
+//
+//     setState(() {
+//       _image = newImage;
+//     });
+//   }
 
   Future<void> _showChoiceDialog(BuildContext context) {
     return showDialog(
@@ -95,16 +126,56 @@ class _MyCameraState extends State<MyCamera> {
         });
   }
 
+  Future<void> _showMetaDialog() {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Image Metadata'),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  GestureDetector(
+                    child: const Text('Tap here to see metadata!'),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ExifPackage(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Padding(padding: EdgeInsets.all(8.0)),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('View Image'),
+        actions: [
+          ElevatedButton.icon(
+            onPressed: _showMetaDialog,
+            icon: Icon(Icons.info_outline_rounded),
+            label: Text(''),
+          ),
+        ],
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            // ElevatedButton.icon(
+            //   onPressed: _showMetaDialog,
+            //   icon: Icon(Icons.info_outline_rounded),
+            //   label: Text(''),
+            // ),
             _initialImageView(),
             Column(
               children: [

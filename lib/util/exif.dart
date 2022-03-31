@@ -222,20 +222,21 @@ class _ExifPackageState extends State<ExifPackage> with WidgetsBindingObserver {
       body: ListView(children: <Widget>[
         Column(
           children: <Widget>[
-            SizedBox(
-              child: controller?.value.isInitialized ?? false
-                  ? CameraPreview(controller!)
-                  : Container(),
-              height: 200.0,
-            ),
-            const SizedBox(
-              height: 10.0,
-            ),
-            ElevatedButton.icon(
-              onPressed: onCameraCapture,
-              icon: const Icon(Icons.camera),
-              label: const Text('Capture'),
-            ),
+            ///Top camera
+            // SizedBox(
+            //   child: controller?.value.isInitialized ?? false
+            //       ? CameraPreview(controller!)
+            //       : Container(),
+            //   height: 200.0,
+            // ),
+            // const SizedBox(
+            //   height: 10.0,
+            // ),
+            // ElevatedButton.icon(
+            //   onPressed: onCameraCapture,
+            //   icon: const Icon(Icons.camera),
+            //   label: const Text('Capture'),
+            // ),
             const SizedBox(
               height: 10.0,
             ),
